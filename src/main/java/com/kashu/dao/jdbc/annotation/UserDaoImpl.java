@@ -30,6 +30,22 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 	
 	private DataSource dataSource;
 	private NamedParameterJdbcTemplate template;
+	private String select_by_uuid = "SELECT * FROM TB_USER WHERE UUID LIKE '%:uuid%'";
+	private String select_by_first_name = "SELECT * FROM TB_USER WHERE FIRST_NAME LIKE '%:first_name%'";
+	private String select_by_last_name = "SELECT * FROM TB_USER WHERE LAST_NAME LIKE '%:last_name%'";
+	private String select_by_display_name = "SELECT * FROM TB_USER WHERE DISPLAY_NAME LIKE '%:display_name%'";
+	private String select_by_male = "SELECT * FROM TB_USER WHERE MALE = :male";
+	private String select_by_birthday_gt = "SELECT * FROM TB_USER WHERE BIRTHDAY > :birthday";
+	private String select_by_birthday_lt = "SELECT * FROM TB_USER WHERE BIRTHDAY < :birthday";
+	private String select_by_birthday_eq = "SELECT * FROM TB_USER WHERE BIRTHDAY = :birthday";
+	private String select_by_birthday_between = "SELECT * FROM TB_USER WHERE BIRTHDAY BETWEEN :date1 AND :date2";
+	private String select_by_address = "SELECT * FROM TB_USER WHERE ADDRESS LIKE '%:address%'";
+	private String select_by_phone = "SELECT * FROM TB_USER WHERE PHONE LIKE '%:phone%'";
+	private String select_by_score_gt = "SELECT * FROM TB_USER WHERE SCORE > :score";
+	private String select_by_score_lt = "SELECT * FROM TB_USER WHERE SCORE < :score";
+	private String select_by_score_eq = "SELECT * FROM TB_USER WHERE SCORE = :score";
+	private String order_by_asc = " ORDER BY :order_column ASC";
+	private String order_by_desc = " ORDER BY :order_column DESC";
 	
 	public void afterPropertiesSet() throws Exception {
 		if (dataSource == null) {
@@ -52,6 +68,32 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return template.query(sql, new UserMapper());
 	}
 
+	@Override
+	public List<User> findByParams(Map<String, Object> params) {
+		String sql = "";
+		if (params.get("uuid")!=null){
+			sql = select_by_uuid;
+		}else if (params.get("first_name")!=null){
+			sql = select_by_first_name;
+		}else if(params.get("last_name")!=null){
+			sql = select_by_last_name;
+		}else if(params.get("display_name")!=null){
+			sql = select_by_display_name;
+		}
+		
+		if (params.get("order_column")!=null){
+			String order_type = (String)params.get("order_type");
+			if(order_type!=null){
+				if(order_type.equals("DESC")){
+					sql += order_by_desc;
+				}else{
+					sql += order_by_asc;
+				}
+			}
+		}
+		return null;
+	}		
+	
 	public boolean exists(Long id) {
 		// TODO Auto-generated method stub
 		return false;
@@ -62,6 +104,12 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return 0;
 	}
 
+	@Override
+	public long countByParams(Map<String, Object> params) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
 	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
 	public User insert(User user) {
 		String sql = "INSERT INTO TB_USER "
@@ -131,6 +179,6 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 			return user;
 		}
 		
-	}	
+	}
 
 }
