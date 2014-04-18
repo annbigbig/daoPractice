@@ -67,18 +67,116 @@ public class UserDaoTest {
 		
 		System.out.println("-----------search by uuid -----------");
 		params.put("uuid", "%tony%");
+		System.out.println("[params] uuid = %tony%");
 		List<User> users = userDao.findByParams(params);
 		listUsers(users);
 		
 		System.out.println("----------search by firstName");
 		params.clear();
 		params.put("firstName","%sa%");
+		System.out.println("[params] firstName = %sa%");
 		users = userDao.findByParams(params);
 		listUsers(users);
 		
 		System.out.println("----------search by lastName");
 		params.clear();
 		params.put("lastName", "%S%");
+		System.out.println("[params] lastName = %S%");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by displayName");
+		params.clear();
+		params.put("displayName", "%y%");
+		System.out.println("[params] displayName = %y%");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by male");
+		params.clear();
+		params.put("male", true);
+		System.out.println("[params] male = true");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by birthday (lt)");
+		params.clear();
+		//params.put("birthday", getDate("1989-03-15"));
+		params.put("birthday", "1989-03-15");
+		params.put("operator", "lt");
+		System.out.println("[params] birthday = 1989-03-15 , operator = lt");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by birthday (gt)");
+		params.clear();
+		//params.put("birthday", getDate("1989-03-15"));
+		params.put("birthday", "1989-03-15");
+		params.put("operator", "gt");
+		System.out.println("[params] birthday = 1989-03-15 , operator = gt");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		//以日期查詢時， 參數請用String型態，不要用Date型態， 以免發生不可預期的結果（找不到）
+		System.out.println("----------search by birthday (eq)");
+		params.clear();
+		params.put("birthday", "1989-03-15");		//這行找得到
+		//params.put("birthday", getDate("1989-03-15"));		//這行找不到
+		params.put("operator", "eq");
+		System.out.println("[params] birthday = 1989-03-15 , operator = eq");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by birthday (between)");
+		params.clear();
+		params.put("date1", "1980-01-01");
+		params.put("date2", "1989-12-31");
+		System.out.println("[params] date1 = 1980-01-01 , date2 = 1989-12-31");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by address");
+		params.clear();
+		params.put("address", "%某城%");
+		System.out.println("[params] address = %某城%");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by phone");
+		params.clear();
+		params.put("phone", "%23%");
+		System.out.println("[params] phone = %23%");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by mobile");
+		params.clear();
+		params.put("mobile", "%32%");
+		System.out.println("[params] mobile = %32%");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by score gt");
+		params.clear();
+		params.put("score", new Integer(11703));
+		params.put("operator", "gt");
+		System.out.println("[params] score = 11703 , operator = gt");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by score lt");
+		params.clear();
+		params.put("score", new Integer(11703));
+		params.put("operator", "lt");
+		System.out.println("[params] score = 11703 , operator = lt");
+		users = userDao.findByParams(params);
+		listUsers(users);
+		
+		System.out.println("----------search by score eq");
+		params.clear();
+		params.put("score", new Integer(11703));
+		params.put("operator", "eq");
+		System.out.println("[params] score = 11703 , operator = eq");
 		users = userDao.findByParams(params);
 		listUsers(users);
 	}
