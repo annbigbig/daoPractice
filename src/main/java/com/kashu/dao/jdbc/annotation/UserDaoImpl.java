@@ -56,21 +56,24 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		String sql = "SELECT * FROM TB_USER";
 		sql += getWhereClause(params);
 		sql += getOrderClause(params);
-		
-		return null;
+		sql += getLimitClause(params);
+		System.out.println("[sql statement] = " + sql);
+		return template.query(sql, params, new UserMapper());
 	}
 	
+	//不要把%寫進SQL statement裡面，會導致悲慘結果，什麼都搜不到
+	//Don't write % into your SQL statement , this will cause database return nothing
 	public String getWhereClause(Map<String,Object> params){
 		String operator = (params.get("operator")==null) ? "" : (String) params.get("operator");
 		String where = "";
 		if (params.get("uuid")!=null){
-			where = " WHERE UUID LIKE '%:uuid%'";
-		}else if (params.get("firstNname")!=null){
-			where = " WHERE FIRST_NAME LIKE '%:firstName%'";
+			where = " WHERE UUID LIKE :uuid";
+		}else if (params.get("firstName")!=null){
+			where = " WHERE FIRST_NAME LIKE :firstName";
 		}else if(params.get("lastName")!=null){
-			where = " WHERE LAST_NAME LIKE '%:lastName%'";
+			where = " WHERE LAST_NAME LIKE :lastName";
 		}else if(params.get("displayName")!=null){
-			where = " WHERE DISPLAY_NAME LIKE '%:displayName%'";
+			where = " WHERE DISPLAY_NAME LIKE :displayName";
 		}else if(params.get("male")!=null){
 			where = " WHERE MALE = :male";
 		}else if(params.get("birthday")!=null && operator.equals("gt")){
@@ -82,11 +85,11 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		}else if(params.get("date1")!=null && params.get("date2")!=null){
 			where = " WHERE BIRTHDAY BETWEEN :date1 AND :date2";
 		}else if(params.get("address")!=null){
-			where = " WHERE ADDRESS LIKE '%:address%'";
+			where = " WHERE ADDRESS LIKE :address";
 		}else if(params.get("phone")!=null){
-			where = " WHERE PHONE LIKE '%:phone%'";
+			where = " WHERE PHONE LIKE :phone";
 		}else if(params.get("mobile")!=null){
-			where = " WHERE MOBILE LIKE '%:mobile%'";
+			where = " WHERE MOBILE LIKE :mobile";
 		}else if(params.get("score")!=null && operator.equals("gt")){
 			where = " WHERE SCORE > :score";
 		}else if(params.get("score")!=null && operator.equals("lt")){
@@ -94,6 +97,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		}else if(params.get("score")!=null && operator.equals("eq")){
 			where = " WHERE SCORE = :score";
 		}
+		System.out.println("[where clause] = " + where);
 		return where;
 	}
 	
@@ -147,6 +151,16 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return order;
 	}
 	
+	public String getLimitClause(Map<String,Object> params){
+		String limit = "";
+		Integer startIndex = (params.get("startIndex")==null) ? -1 : (Integer)params.get("startIndex");
+		Integer rowCount = (params.get("rowCount")==null) ? -1 : (Integer)params.get("rowCount");
+		if(startIndex > 0 && rowCount >0){
+			limit = " LIMIT "+ startIndex + "," + rowCount;
+		}
+		return limit;
+	}
+	
 	public boolean exists(Long id) {
 		// TODO Auto-generated method stub
 		return false;
@@ -174,7 +188,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 			params.put("passwd", user.getPasswd());
 			params.put("firstName", user.getFirstName());
 			params.put("lastNname", user.getLastName());
-			params.put("displayNname", user.getDisplayName());
+			params.put("displayName", user.getDisplayName());
 			params.put("male", user.isMale());
 			params.put("birthday", user.getBirthday());
 			params.put("address", user.getAddress());
