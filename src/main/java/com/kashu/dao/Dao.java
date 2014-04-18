@@ -5,6 +5,8 @@ import java.util.Map;
 
 public interface Dao<T> {
 
+		public T findOne(Long id);
+	
 		public List<T> findAll();
 		
 		public List<T> findByParams(Map<String,Object> params);

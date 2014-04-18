@@ -22,18 +22,31 @@ public class UserDaoTest {
 
 		Dao<User> userDao = ctx.getBean("userDao",Dao.class);
 	
-		findAll(userDao);
+		//findAll(userDao);
+		
+		//findOne(userDao);
 		
 		//insert(userDao);
 		
-		findByParams(userDao);
+		update(userDao);
 		
+		//findByParams(userDao);
+		
+		//deleteById(userDao);
+		
+		//deleteByUser(userDao);
 	}
-
+	
 	public static void findAll(Dao<User> userDao){
 		System.out.println("----- find all -----");
 		List<User> users = userDao.findAll();
 		listUsers(users);
+	}
+	
+	public static void findOne(Dao<User> userDao){
+		System.out.println("----- find one -----");
+		User user = userDao.findOne(2l);
+		System.out.println(user);
 	}
 	
 	public static void listUsers(List<User> users){
@@ -45,17 +58,17 @@ public class UserDaoTest {
 	public static void insert(Dao<User> userDao){
 		System.out.println("------insert -----");
 		User user = new User();
-		user.setUuid("chikabu");
-		user.setPasswd("chika-passwd");
-		user.setFirstName("Chi");
-		user.setLastName("KaBu");
-		user.setDisplayName("CKB");
+		user.setUuid("mabaeddk");
+		user.setPasswd("maba-passwd");
+		user.setFirstName("Mb");
+		user.setLastName("DD");
+		user.setDisplayName("MbDD");
 		user.setMale(false);
-		user.setBirthday(getDate("1981-12-08"));
-		user.setAddress("日本東京都不知火舞市丁小路350號2樓");
-		user.setPhone("83143258");
-		user.setMobile("11532561");
-		user.setScore(11703);
+		user.setBirthday(getDate("1987-04-21"));
+		user.setAddress("長白山的最高處就是我家");
+		user.setPhone("83142234");
+		user.setMobile("54356153-3");
+		user.setScore(2390);
 		userDao.insert(user);
 		System.out.println("Has inserted a user with id [" + user.getId() + "]");
 		System.out.println(user);
@@ -179,6 +192,42 @@ public class UserDaoTest {
 		System.out.println("[params] score = 11703 , operator = eq");
 		users = userDao.findByParams(params);
 		listUsers(users);
+	}
+	
+	public static void deleteById(Dao<User> userDao){
+		System.out.println("---- delete by id ----");
+		userDao.delete(7l);
+		System.out.println("User of id [7] has been deleted");
+		findAll(userDao);
+	}
+	
+	public static void deleteByUser(Dao<User> userDao){
+		System.out.println("---- delete by user ----");
+		User user = new User();
+		user.setId(9l);
+		userDao.delete(user);
+		System.out.println("User of id [9] has been deleted");
+		findAll(userDao);
+	}
+	
+	public static void update(Dao<User> userDao){
+		System.out.println("---- update user ----");
+		User user = userDao.findOne(10l);
+		System.out.println(" --------- Before update ---------");
+		System.out.println(user);
+		user.setFirstName("寶成");
+		user.setLastName("張");
+		user.setDisplayName("張寶成");
+		user.setMale(true);
+		user.setBirthday(getDate("1959-01-23"));
+		user.setAddress("寶成哥的家就住在賭神家的隔壁");
+		user.setPhone("123456778");
+		user.setMobile("8132458");
+		user.setScore(500);
+		userDao.update(user);
+		user = userDao.findOne(10l);
+		System.out.println(" --------- After update ---------");
+		System.out.println(user);
 	}
 	
 	public static Map<String,Object> getParams(){

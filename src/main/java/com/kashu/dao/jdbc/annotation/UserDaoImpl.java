@@ -15,6 +15,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -47,6 +48,13 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		this.template = new NamedParameterJdbcTemplate(dataSource);
 	}
 
+	public User findOne(Long id) {
+		String sql = "SELECT * FROM TB_USER WHERE ID = :id";
+		Map<String,Object> params = new HashMap<String,Object>();
+		params.put("id", id);
+		return template.queryForObject(sql, params, new UserMapper());
+	}
+	
 	public List<User> findAll() {
 		String sql = "SELECT * FROM TB_USER";
 		return template.query(sql, new UserMapper());
@@ -148,6 +156,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 				order = " ORDER BY SCORE DESC";
 			}
 		}
+		System.out.println("[order clause] = " + order);
 		return order;
 	}
 	
@@ -158,6 +167,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		if(startIndex > 0 && rowCount >0){
 			limit = " LIMIT "+ startIndex + "," + rowCount;
 		}
+		System.out.println("[limit clause] = " + limit);
 		return limit;
 	}
 	
@@ -182,22 +192,11 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		String sql = "INSERT INTO TB_USER "
 				+ "(UUID, PASSWD, FIRST_NAME, LAST_NAME, DISPLAY_NAME, MALE, BIRTHDAY, ADDRESS, PHONE, MOBILE, SCORE) "
 				+ "values "
-				+ "(:uuid, :passwd, :firstName, :lastNname, :displayName, :male, :birthday, :address, :phone, :mobile, :score)";
-		Map<String,Object> params = new HashMap<String,Object>();
-			params.put("uuid", user.getUuid());
-			params.put("passwd", user.getPasswd());
-			params.put("firstName", user.getFirstName());
-			params.put("lastNname", user.getLastName());
-			params.put("displayName", user.getDisplayName());
-			params.put("male", user.isMale());
-			params.put("birthday", user.getBirthday());
-			params.put("address", user.getAddress());
-			params.put("phone", user.getPhone());
-			params.put("mobile", user.getMobile());
-			params.put("score", user.getScore());
-			KeyHolder keyholder = new GeneratedKeyHolder();
-			template.update(sql, new MapSqlParameterSource(params), keyholder);
-			user.setId(keyholder.getKey().longValue());
+				+ "(:uuid, :passwd, :firstName, :lastName, :displayName, :male, :birthday, :address, :phone, :mobile, :score)";
+		Map<String,Object> params = getParams(user);
+		KeyHolder keyholder = new GeneratedKeyHolder();
+		template.update(sql, new MapSqlParameterSource(params), keyholder);
+		user.setId(keyholder.getKey().longValue());
 		return user;
 	}
 
@@ -206,9 +205,44 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return null;
 	}
 
-	public User update(User entity) {
-		// TODO Auto-generated method stub
-		return null;
+	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
+	public User update(User user) {
+		String sql = getUpdateSQL();
+		Map<String,Object> params = getParams(user);
+		template.update(sql, params);
+		return user;
+	}
+	
+	public Map<String,Object> getParams(User user){
+		Map<String,Object> params = new HashMap<String,Object>();
+		params.put("id", user.getId());
+		params.put("uuid", user.getUuid());
+		params.put("passwd", user.getPasswd());
+		params.put("firstName", user.getFirstName());
+		params.put("lastName", user.getLastName());
+		params.put("displayName", user.getDisplayName());
+		params.put("male", user.isMale());
+		params.put("birthday", user.getBirthday());
+		params.put("address", user.getAddress());
+		params.put("phone", user.getPhone());
+		params.put("mobile", user.getMobile());
+		params.put("score", user.getScore());
+		return params;
+	}
+	
+	public String getUpdateSQL(){
+		String sql = "UPDATE TB_USER SET " +
+				"FIRST_NAME = :firstName, " +
+				"LAST_NAME = :lastName, " +
+				"DISPLAY_NAME = :displayName, " +
+				"MALE = :male, " +
+				"BIRTHDAY = :birthday, " +
+				"ADDRESS = :address, " +
+				"PHONE = :phone, " + 
+				"MOBILE = :mobile, " +
+				"SCORE = :score " + 
+				"WHERE ID = :id";
+		return sql;
 	}
 
 	public User updateWith(User entity) {
@@ -216,14 +250,16 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return null;
 	}
 
+	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
 	public void delete(Long id) {
-		// TODO Auto-generated method stub
-		
+		String sql = "DELETE FROM TB_USER WHERE ID = :id";
+		SqlParameterSource param = new MapSqlParameterSource("id", id);
+		template.update(sql, param);
 	}
 
-	public void delete(User entity) {
-		// TODO Auto-generated method stub
-		
+	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
+	public void delete(User user) {
+		delete(user.getId());		
 	}
 	
 	//Inner Class，將資料庫取出的每一行Row封裝成對應的Usert物件
