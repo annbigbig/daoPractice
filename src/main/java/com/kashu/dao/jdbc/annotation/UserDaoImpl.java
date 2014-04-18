@@ -30,22 +30,6 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 	
 	private DataSource dataSource;
 	private NamedParameterJdbcTemplate template;
-	private String select_by_uuid = "SELECT * FROM TB_USER WHERE UUID LIKE '%:uuid%'";
-	private String select_by_first_name = "SELECT * FROM TB_USER WHERE FIRST_NAME LIKE '%:first_name%'";
-	private String select_by_last_name = "SELECT * FROM TB_USER WHERE LAST_NAME LIKE '%:last_name%'";
-	private String select_by_display_name = "SELECT * FROM TB_USER WHERE DISPLAY_NAME LIKE '%:display_name%'";
-	private String select_by_male = "SELECT * FROM TB_USER WHERE MALE = :male";
-	private String select_by_birthday_gt = "SELECT * FROM TB_USER WHERE BIRTHDAY > :birthday";
-	private String select_by_birthday_lt = "SELECT * FROM TB_USER WHERE BIRTHDAY < :birthday";
-	private String select_by_birthday_eq = "SELECT * FROM TB_USER WHERE BIRTHDAY = :birthday";
-	private String select_by_birthday_between = "SELECT * FROM TB_USER WHERE BIRTHDAY BETWEEN :date1 AND :date2";
-	private String select_by_address = "SELECT * FROM TB_USER WHERE ADDRESS LIKE '%:address%'";
-	private String select_by_phone = "SELECT * FROM TB_USER WHERE PHONE LIKE '%:phone%'";
-	private String select_by_score_gt = "SELECT * FROM TB_USER WHERE SCORE > :score";
-	private String select_by_score_lt = "SELECT * FROM TB_USER WHERE SCORE < :score";
-	private String select_by_score_eq = "SELECT * FROM TB_USER WHERE SCORE = :score";
-	private String order_by_asc = " ORDER BY :order_column ASC";
-	private String order_by_desc = " ORDER BY :order_column DESC";
 	
 	public void afterPropertiesSet() throws Exception {
 		if (dataSource == null) {
@@ -68,31 +52,100 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return template.query(sql, new UserMapper());
 	}
 
-	@Override
 	public List<User> findByParams(Map<String, Object> params) {
-		String sql = "";
-		if (params.get("uuid")!=null){
-			sql = select_by_uuid;
-		}else if (params.get("first_name")!=null){
-			sql = select_by_first_name;
-		}else if(params.get("last_name")!=null){
-			sql = select_by_last_name;
-		}else if(params.get("display_name")!=null){
-			sql = select_by_display_name;
-		}
+		String sql = "SELECT * FROM TB_USER";
+		sql += getWhereClause(params);
+		sql += getOrderClause(params);
 		
-		if (params.get("order_column")!=null){
-			String order_type = (String)params.get("order_type");
-			if(order_type!=null){
-				if(order_type.equals("DESC")){
-					sql += order_by_desc;
-				}else{
-					sql += order_by_asc;
-				}
+		return null;
+	}
+	
+	public String getWhereClause(Map<String,Object> params){
+		String operator = (params.get("operator")==null) ? "" : (String) params.get("operator");
+		String where = "";
+		if (params.get("uuid")!=null){
+			where = " WHERE UUID LIKE '%:uuid%'";
+		}else if (params.get("firstNname")!=null){
+			where = " WHERE FIRST_NAME LIKE '%:firstName%'";
+		}else if(params.get("lastName")!=null){
+			where = " WHERE LAST_NAME LIKE '%:lastName%'";
+		}else if(params.get("displayName")!=null){
+			where = " WHERE DISPLAY_NAME LIKE '%:displayName%'";
+		}else if(params.get("male")!=null){
+			where = " WHERE MALE = :male";
+		}else if(params.get("birthday")!=null && operator.equals("gt")){
+			where = " WHERE BIRTHDAY > :birthday";
+		}else if(params.get("birthday")!=null && operator.equals("lt")){
+			where = " WHERE BIRTHDAY < :birthday";
+		}else if(params.get("birthday")!=null && operator.equals("eq")){
+			where = " WHERE BIRTHDAY = :birthday";
+		}else if(params.get("date1")!=null && params.get("date2")!=null){
+			where = " WHERE BIRTHDAY BETWEEN :date1 AND :date2";
+		}else if(params.get("address")!=null){
+			where = " WHERE ADDRESS LIKE '%:address%'";
+		}else if(params.get("phone")!=null){
+			where = " WHERE PHONE LIKE '%:phone%'";
+		}else if(params.get("mobile")!=null){
+			where = " WHERE MOBILE LIKE '%:mobile%'";
+		}else if(params.get("score")!=null && operator.equals("gt")){
+			where = " WHERE SCORE > :score";
+		}else if(params.get("score")!=null && operator.equals("lt")){
+			where = " WHERE SCORE < :score";
+		}else if(params.get("score")!=null && operator.equals("eq")){
+			where = " WHERE SCORE = :score";
+		}
+		return where;
+	}
+	
+	public String getOrderClause(Map<String,Object> params){
+		String orderColumn = (String)params.get("orderColumn");
+		String orderType = (String)params.get("orderType");
+		String order = "";
+		if( orderColumn!=null && orderType!=null){
+			if(orderColumn.equals("uuid") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY UUID ASC";
+			}else if(orderColumn.equals("uuid") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY UUID DESC";
+			}else if(orderColumn.equals("firstName") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY FIRST_NAME ASC";
+			}else if(orderColumn.equals("firstName") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY FIRST_NAME DESC";
+			}else if(orderColumn.equals("lastName") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY LAST_NAME ASC";
+			}else if(orderColumn.equals("lastName") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY LAST_NAME DESC";
+			}else if(orderColumn.equals("displayName") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY DISPLAY_NAME ASC";
+			}else if(orderColumn.equals("displayName") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY DISPLAY_NAME DESC";
+			}else if(orderColumn.equals("male") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY MALE ASC";
+			}else if(orderColumn.equals("male") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY MALE DESC";
+			}else if(orderColumn.equals("birthday") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY BIRTHDAY ASC";
+			}else if(orderColumn.equals("birthday") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY BIRTHDAY DESC";
+			}else if(orderColumn.equals("address") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY ADDRESS ASC";
+			}else if(orderColumn.equals("address") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY ADDRESS DESC";
+			}else if(orderColumn.equals("phone") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY PHONE ASC";
+			}else if(orderColumn.equals("phone") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY PHONE DESC";
+			}else if(orderColumn.equals("mobile") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY MOBILE ASC";
+			}else if(orderColumn.equals("mobile") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY MOBILE DESC";
+			}else if(orderColumn.equals("score") && orderType.equalsIgnoreCase("asc")){
+				order = " ORDER BY SCORE ASC";
+			}else if(orderColumn.equals("score") && orderType.equalsIgnoreCase("desc")){
+				order = " ORDER BY SCORE DESC";
 			}
 		}
-		return null;
-	}		
+		return order;
+	}
 	
 	public boolean exists(Long id) {
 		// TODO Auto-generated method stub
@@ -115,13 +168,13 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		String sql = "INSERT INTO TB_USER "
 				+ "(UUID, PASSWD, FIRST_NAME, LAST_NAME, DISPLAY_NAME, MALE, BIRTHDAY, ADDRESS, PHONE, MOBILE, SCORE) "
 				+ "values "
-				+ "(:uuid, :passwd, :first_name, :last_name, :display_name, :male, :birthday, :address, :phone, :mobile, :score)";
+				+ "(:uuid, :passwd, :firstName, :lastNname, :displayName, :male, :birthday, :address, :phone, :mobile, :score)";
 		Map<String,Object> params = new HashMap<String,Object>();
 			params.put("uuid", user.getUuid());
 			params.put("passwd", user.getPasswd());
-			params.put("first_name", user.getFirstName());
-			params.put("last_name", user.getLastName());
-			params.put("display_name", user.getDisplayName());
+			params.put("firstName", user.getFirstName());
+			params.put("lastNname", user.getLastName());
+			params.put("displayNname", user.getDisplayName());
 			params.put("male", user.isMale());
 			params.put("birthday", user.getBirthday());
 			params.put("address", user.getAddress());
