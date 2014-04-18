@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -31,6 +32,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 	
 	private DataSource dataSource;
 	private NamedParameterJdbcTemplate template;
+	private JdbcTemplate jdbcTemplate;
 	
 	public void afterPropertiesSet() throws Exception {
 		if (dataSource == null) {
@@ -46,6 +48,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 		this.template = new NamedParameterJdbcTemplate(dataSource);
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
 	public User findOne(Long id) {
@@ -171,20 +174,26 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return limit;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public boolean exists(Long id) {
-		// TODO Auto-generated method stub
-		return false;
+		String sql = "SELECT COUNT(*) FROM TB_USER WHERE ID = ?";
+		return (jdbcTemplate.queryForLong(sql,id) == 1);
+		
 	}
 
+	@SuppressWarnings("deprecation")
 	public long count() {
-		// TODO Auto-generated method stub
-		return 0;
+		String sql = "SELECT COUNT(*) FROM TB_USER";
+		return jdbcTemplate.queryForLong(sql);
 	}
 
-	@Override
+	@SuppressWarnings("deprecation")
 	public long countByParams(Map<String, Object> params) {
-		// TODO Auto-generated method stub
-		return 0;
+		String sql = "SELECT COUNT(*) FROM TB_USER ";
+		sql += getWhereClause(params);
+		sql += getLimitClause(params);
+		System.out.println("[sql statement] = " + sql);
+		return template.queryForLong(sql, params);
 	}
 	
 	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)

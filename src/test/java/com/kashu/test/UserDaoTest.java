@@ -26,9 +26,15 @@ public class UserDaoTest {
 		
 		//findOne(userDao);
 		
+		//exists(userDao);
+		
+		//count(userDao);
+		
+		countByParams(userDao);
+		
 		//insert(userDao);
 		
-		update(userDao);
+		//update(userDao);
 		
 		//findByParams(userDao);
 		
@@ -47,6 +53,33 @@ public class UserDaoTest {
 		System.out.println("----- find one -----");
 		User user = userDao.findOne(2l);
 		System.out.println(user);
+	}
+	
+	public static void exists(Dao<User> userDao){
+		System.out.println("----- exists  -----");
+		for(long i=1;i<=10;i++){
+			if(userDao.exists(i)){
+				System.out.println("id[" + i + "] = " + "exists");
+			}else{
+				System.out.println("id[" + i + "] = " + "NOT exists");
+			}
+		}
+	}
+	
+	public static void count(Dao<User> userDao){
+		System.out.println("----- exists  -----");
+		System.out.println("TB_USER資料表總共有 [" + userDao.count() + "] 筆記錄");
+	}
+	
+	public static void countByParams(Dao<User> userDao){
+		System.out.println("----- count by params  -----");
+		Map<String,Object> params = new HashMap<String,Object>();
+		
+		System.out.println("-----------count by uuid -----------");
+		params.put("uuid", "%tony%");
+		System.out.println("[params] uuid = %tony% 	[count] = " + userDao.countByParams(params));
+		
+		
 	}
 	
 	public static void listUsers(List<User> users){
