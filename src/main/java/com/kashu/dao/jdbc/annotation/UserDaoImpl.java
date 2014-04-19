@@ -124,7 +124,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return user;
 	}
 
-	public User insertWith(User entity) {
+	public User insertBatch(List<User> users) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -137,7 +137,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return user;
 	}
 
-	public User updateWith(User entity) {
+	public User updateBatch(List<User> users) {
 		// TODO Auto-generated method stub
 		return null;
 	}

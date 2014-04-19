@@ -25,11 +25,11 @@ public interface Dao<T> {
 		
 		public T insert(T entity);
 		
-		public T insertWith(T entity);
+		public T insertBatch(List<T> entities);
 		
 		public T update(T entity);
 		
-		public T updateWith(T entity);
+		public T updateBatch(List<T> entities);
 		
 		public void delete(Long id);
 		

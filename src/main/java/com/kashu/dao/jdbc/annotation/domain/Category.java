@@ -10,7 +10,8 @@ public class Category {
 	private Category parent;	//foreign key , column name in table TB_CATEGORY will be PID
 	
 	//associations
-	private Set<Category> children = new HashSet<Category>();
+	private Set<Category> children = new HashSet<Category>();	//one to many
+	private Set<Article> articles = new HashSet<Article>();			//one to many
 	
 	public Category(){
 		
@@ -52,6 +53,14 @@ public class Category {
 
 	public void setChildren(Set<Category> children) {
 		this.children = children;
+	}
+
+	public Set<Article> getArticles() {
+		return articles;
+	}
+
+	public void setArticles(Set<Article> articles) {
+		this.articles = articles;
 	}
 
 }

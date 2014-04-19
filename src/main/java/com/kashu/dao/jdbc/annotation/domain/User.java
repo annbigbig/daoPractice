@@ -36,7 +36,7 @@ public class User {
 		this.displayName = displayName;
 	}
 	
-	// All of the columns that a User record must contain
+	// All of the columns that a User record will contain
 	public User(String uuid, String passwd, String firstName, String lastName, String displayName,
 			boolean male, Date birthday, String address, String phone, String mobile, Integer score){
 		this.uuid = uuid;
