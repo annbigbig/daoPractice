@@ -22,6 +22,7 @@ public class User {
 	//associations (NOT exists in TB_USER table)
 	private Set<Group> groups = new HashSet<Group>();		//many to many
 	private Set<Article> articles = new HashSet<Article>();	//one to many
+	private Set<User> friends = new HashSet<User>();			//many to many
 	
 	public User() {
 		
@@ -162,6 +163,14 @@ public class User {
 
 	public void setArticles(Set<Article> articles) {
 		this.articles = articles;
+	}
+	
+	public Set<User> getFriends() {
+		return friends;
+	}
+
+	public void setFriends(Set<User> friends) {
+		this.friends = friends;
 	}
 
 	public String toString(){

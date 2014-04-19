@@ -8,6 +8,7 @@ public class Category {
 	private Long id;
 	private String name;
 	private Category parent;	//foreign key , column name in table TB_CATEGORY will be PID
+	private Group group;		//foreign key , column name in table TB_CATEGORY will be GROUP_ID
 	
 	//associations
 	private Set<Category> children = new HashSet<Category>();	//one to many
@@ -18,9 +19,10 @@ public class Category {
 	}
 	
 	// All of the columns that a Category record must contain
-	public Category(String name, Category parent){
+	public Category(String name, Category parent, Group group){
 		this.name = name;
 		this.parent = parent;
+		this.group = group;
 	}
 
 	public Long getId() {
@@ -45,6 +47,14 @@ public class Category {
 
 	public void setParent(Category parent) {
 		this.parent = parent;
+	}
+	
+	public Group getGroup() {
+		return group;
+	}
+
+	public void setGroup(Group group) {
+		this.group = group;
 	}
 
 	public Set<Category> getChildren() {

@@ -9,7 +9,8 @@ public class Group {
 	private String name;
 	
 	//associations (NOT exists in TB_GROUP table)
-	private Set<User> users = new HashSet<User>();		//many to many
+	private Set<User> users = new HashSet<User>();							//many to many
+	private Set<Category> categories = new HashSet<Category>();		//one to many
 	
 	public Group(){
 		
@@ -41,6 +42,14 @@ public class Group {
 
 	public void setUsers(Set<User> users) {
 		this.users = users;
+	}
+
+	public Set<Category> getCategories() {
+		return categories;
+	}
+
+	public void setCategories(Set<Category> categories) {
+		this.categories = categories;
 	}
 	
 }
