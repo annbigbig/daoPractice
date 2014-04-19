@@ -22,36 +22,36 @@ public class UserDaoTest {
 
 		Dao<User> userDao = ctx.getBean("userDao",Dao.class);
 	
-		//findAll(userDao);
+		//queryAll(userDao);
 		
-		//findOne(userDao);
+		//queryOne(userDao);
 		
 		//exists(userDao);
 		
 		//count(userDao);
 		
-		countByParams(userDao);
+		countList(userDao);
 		
 		//insert(userDao);
 		
 		//update(userDao);
 		
-		//findByParams(userDao);
+		//queryList(userDao);
 		
 		//deleteById(userDao);
 		
 		//deleteByUser(userDao);
 	}
 	
-	public static void findAll(Dao<User> userDao){
+	public static void queryAll(Dao<User> userDao){
 		System.out.println("----- find all -----");
-		List<User> users = userDao.findAll();
+		List<User> users = userDao.queryAll();
 		listUsers(users);
 	}
 	
-	public static void findOne(Dao<User> userDao){
+	public static void queryOne(Dao<User> userDao){
 		System.out.println("----- find one -----");
-		User user = userDao.findOne(2l);
+		User user = userDao.queryOne(2l);
 		System.out.println(user);
 	}
 	
@@ -71,13 +71,13 @@ public class UserDaoTest {
 		System.out.println("TB_USER資料表總共有 [" + userDao.count() + "] 筆記錄");
 	}
 	
-	public static void countByParams(Dao<User> userDao){
+	public static void countList(Dao<User> userDao){
 		System.out.println("----- count by params  -----");
 		Map<String,Object> params = new HashMap<String,Object>();
 		
 		System.out.println("-----------count by uuid -----------");
 		params.put("uuid", "%tony%");
-		System.out.println("[params] uuid = %tony% 	[count] = " + userDao.countByParams(params));
+		System.out.println("[params] uuid = %tony% 	[count] = " + userDao.countList(params));
 		
 		
 	}
@@ -107,42 +107,42 @@ public class UserDaoTest {
 		System.out.println(user);
 	}
 	
-	public static void findByParams(Dao<User> userDao){
+	public static void queryList(Dao<User> userDao){
 		System.out.println("---- find by params ----");
 		Map<String,Object> params = new HashMap<String,Object>();
 		
 		System.out.println("-----------search by uuid -----------");
 		params.put("uuid", "%tony%");
 		System.out.println("[params] uuid = %tony%");
-		List<User> users = userDao.findByParams(params);
+		List<User> users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by firstName");
 		params.clear();
 		params.put("firstName","%sa%");
 		System.out.println("[params] firstName = %sa%");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by lastName");
 		params.clear();
 		params.put("lastName", "%S%");
 		System.out.println("[params] lastName = %S%");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by displayName");
 		params.clear();
 		params.put("displayName", "%y%");
 		System.out.println("[params] displayName = %y%");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by male");
 		params.clear();
 		params.put("male", true);
 		System.out.println("[params] male = true");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by birthday (lt)");
@@ -151,7 +151,7 @@ public class UserDaoTest {
 		params.put("birthday", "1989-03-15");
 		params.put("operator", "lt");
 		System.out.println("[params] birthday = 1989-03-15 , operator = lt");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by birthday (gt)");
@@ -160,7 +160,7 @@ public class UserDaoTest {
 		params.put("birthday", "1989-03-15");
 		params.put("operator", "gt");
 		System.out.println("[params] birthday = 1989-03-15 , operator = gt");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		//以日期查詢時， 參數請用String型態，不要用Date型態， 以免發生不可預期的結果（找不到）
@@ -170,7 +170,7 @@ public class UserDaoTest {
 		//params.put("birthday", getDate("1989-03-15"));		//這行找不到
 		params.put("operator", "eq");
 		System.out.println("[params] birthday = 1989-03-15 , operator = eq");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by birthday (between)");
@@ -178,28 +178,28 @@ public class UserDaoTest {
 		params.put("date1", "1980-01-01");
 		params.put("date2", "1989-12-31");
 		System.out.println("[params] date1 = 1980-01-01 , date2 = 1989-12-31");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by address");
 		params.clear();
 		params.put("address", "%某城%");
 		System.out.println("[params] address = %某城%");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by phone");
 		params.clear();
 		params.put("phone", "%23%");
 		System.out.println("[params] phone = %23%");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by mobile");
 		params.clear();
 		params.put("mobile", "%32%");
 		System.out.println("[params] mobile = %32%");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by score gt");
@@ -207,7 +207,7 @@ public class UserDaoTest {
 		params.put("score", new Integer(11703));
 		params.put("operator", "gt");
 		System.out.println("[params] score = 11703 , operator = gt");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by score lt");
@@ -215,7 +215,7 @@ public class UserDaoTest {
 		params.put("score", new Integer(11703));
 		params.put("operator", "lt");
 		System.out.println("[params] score = 11703 , operator = lt");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 		
 		System.out.println("----------search by score eq");
@@ -223,7 +223,7 @@ public class UserDaoTest {
 		params.put("score", new Integer(11703));
 		params.put("operator", "eq");
 		System.out.println("[params] score = 11703 , operator = eq");
-		users = userDao.findByParams(params);
+		users = userDao.queryList(params);
 		listUsers(users);
 	}
 	
@@ -231,7 +231,7 @@ public class UserDaoTest {
 		System.out.println("---- delete by id ----");
 		userDao.delete(7l);
 		System.out.println("User of id [7] has been deleted");
-		findAll(userDao);
+		queryAll(userDao);
 	}
 	
 	public static void deleteByUser(Dao<User> userDao){
@@ -240,12 +240,12 @@ public class UserDaoTest {
 		user.setId(9l);
 		userDao.delete(user);
 		System.out.println("User of id [9] has been deleted");
-		findAll(userDao);
+		queryAll(userDao);
 	}
 	
 	public static void update(Dao<User> userDao){
 		System.out.println("---- update user ----");
-		User user = userDao.findOne(10l);
+		User user = userDao.queryOne(10l);
 		System.out.println(" --------- Before update ---------");
 		System.out.println(user);
 		user.setFirstName("寶成");
@@ -258,7 +258,7 @@ public class UserDaoTest {
 		user.setMobile("8132458");
 		user.setScore(500);
 		userDao.update(user);
-		user = userDao.findOne(10l);
+		user = userDao.queryOne(10l);
 		System.out.println(" --------- After update ---------");
 		System.out.println(user);
 	}

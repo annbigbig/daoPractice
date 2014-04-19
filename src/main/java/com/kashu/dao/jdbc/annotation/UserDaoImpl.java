@@ -51,25 +51,107 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
-	public User findOne(Long id) {
+	public User queryOne(Long id) {
 		String sql = "SELECT * FROM TB_USER WHERE ID = :id";
 		Map<String,Object> params = new HashMap<String,Object>();
 		params.put("id", id);
 		return template.queryForObject(sql, params, new UserMapper());
 	}
 	
-	public List<User> findAll() {
+	public List<User> queryAll() {
 		String sql = "SELECT * FROM TB_USER";
 		return template.query(sql, new UserMapper());
 	}
 
-	public List<User> findByParams(Map<String, Object> params) {
+	public List<User> queryList(Map<String, Object> params) {
 		String sql = "SELECT * FROM TB_USER";
 		sql += getWhereClause(params);
 		sql += getOrderClause(params);
 		sql += getLimitClause(params);
 		System.out.println("[sql statement] = " + sql);
 		return template.query(sql, params, new UserMapper());
+	}
+	
+	@Override
+	public User queryOneWith(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<User> queryAllWith() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<User> queryListWith(Map<String, ?> params) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public boolean exists(Long id) {
+		String sql = "SELECT COUNT(*) FROM TB_USER WHERE ID = ?";
+		return (jdbcTemplate.queryForLong(sql,id) == 1);
+		
+	}
+
+	@SuppressWarnings("deprecation")
+	public long count() {
+		String sql = "SELECT COUNT(*) FROM TB_USER";
+		return jdbcTemplate.queryForLong(sql);
+	}
+
+	@SuppressWarnings("deprecation")
+	public long countList(Map<String, Object> params) {
+		String sql = "SELECT COUNT(*) FROM TB_USER ";
+		sql += getWhereClause(params);
+		System.out.println("[sql statement] = " + sql);
+		return template.queryForLong(sql, params);
+	}
+	
+	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
+	public User insert(User user) {
+		String sql = "INSERT INTO TB_USER "
+				+ "(UUID, PASSWD, FIRST_NAME, LAST_NAME, DISPLAY_NAME, MALE, BIRTHDAY, ADDRESS, PHONE, MOBILE, SCORE) "
+				+ "values "
+				+ "(:uuid, :passwd, :firstName, :lastName, :displayName, :male, :birthday, :address, :phone, :mobile, :score)";
+		Map<String,Object> params = getParams(user);
+		KeyHolder keyholder = new GeneratedKeyHolder();
+		template.update(sql, new MapSqlParameterSource(params), keyholder);
+		user.setId(keyholder.getKey().longValue());
+		return user;
+	}
+
+	public User insertWith(User entity) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
+	public User update(User user) {
+		String sql = getUpdateSQL();
+		Map<String,Object> params = getParams(user);
+		template.update(sql, params);
+		return user;
+	}
+
+	public User updateWith(User entity) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
+	public void delete(Long id) {
+		String sql = "DELETE FROM TB_USER WHERE ID = :id";
+		SqlParameterSource param = new MapSqlParameterSource("id", id);
+		template.update(sql, param);
+	}
+
+	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
+	public void delete(User user) {
+		delete(user.getId());		
 	}
 	
 	//不要把%寫進SQL statement裡面，會導致悲慘結果，什麼都搜不到
@@ -173,55 +255,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		System.out.println("[limit clause] = " + limit);
 		return limit;
 	}
-	
-	@SuppressWarnings("deprecation")
-	public boolean exists(Long id) {
-		String sql = "SELECT COUNT(*) FROM TB_USER WHERE ID = ?";
-		return (jdbcTemplate.queryForLong(sql,id) == 1);
 		
-	}
-
-	@SuppressWarnings("deprecation")
-	public long count() {
-		String sql = "SELECT COUNT(*) FROM TB_USER";
-		return jdbcTemplate.queryForLong(sql);
-	}
-
-	@SuppressWarnings("deprecation")
-	public long countByParams(Map<String, Object> params) {
-		String sql = "SELECT COUNT(*) FROM TB_USER ";
-		sql += getWhereClause(params);
-		sql += getLimitClause(params);
-		System.out.println("[sql statement] = " + sql);
-		return template.queryForLong(sql, params);
-	}
-	
-	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
-	public User insert(User user) {
-		String sql = "INSERT INTO TB_USER "
-				+ "(UUID, PASSWD, FIRST_NAME, LAST_NAME, DISPLAY_NAME, MALE, BIRTHDAY, ADDRESS, PHONE, MOBILE, SCORE) "
-				+ "values "
-				+ "(:uuid, :passwd, :firstName, :lastName, :displayName, :male, :birthday, :address, :phone, :mobile, :score)";
-		Map<String,Object> params = getParams(user);
-		KeyHolder keyholder = new GeneratedKeyHolder();
-		template.update(sql, new MapSqlParameterSource(params), keyholder);
-		user.setId(keyholder.getKey().longValue());
-		return user;
-	}
-
-	public User insertWith(User entity) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
-	public User update(User user) {
-		String sql = getUpdateSQL();
-		Map<String,Object> params = getParams(user);
-		template.update(sql, params);
-		return user;
-	}
-	
 	public Map<String,Object> getParams(User user){
 		Map<String,Object> params = new HashMap<String,Object>();
 		params.put("id", user.getId());
@@ -252,23 +286,6 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 				"SCORE = :score " + 
 				"WHERE ID = :id";
 		return sql;
-	}
-
-	public User updateWith(User entity) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
-	public void delete(Long id) {
-		String sql = "DELETE FROM TB_USER WHERE ID = :id";
-		SqlParameterSource param = new MapSqlParameterSource("id", id);
-		template.update(sql, param);
-	}
-
-	@Transactional(readOnly=false, propagation=Propagation.REQUIRED, rollbackFor=Exception.class)
-	public void delete(User user) {
-		delete(user.getId());		
 	}
 	
 	//Inner Class，將資料庫取出的每一行Row封裝成對應的Usert物件

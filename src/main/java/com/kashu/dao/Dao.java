@@ -5,17 +5,23 @@ import java.util.Map;
 
 public interface Dao<T> {
 
-		public T findOne(Long id);
+		public T queryOne(Long id);
 	
-		public List<T> findAll();
+		public List<T> queryAll();
 		
-		public List<T> findByParams(Map<String,Object> params);
+		public List<T> queryList(Map<String,Object> params);
+		
+		public T queryOneWith(Long id);
+		
+		public List<T> queryAllWith();
+		
+		public List<T> queryListWith(Map<String,?> params);
 		
 		public boolean exists(Long id);
 		
 		public long count();
 		
-		public long countByParams(Map<String,Object> params);
+		public long countList(Map<String,Object> params);
 		
 		public T insert(T entity);
 		
