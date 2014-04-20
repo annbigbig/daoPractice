@@ -72,19 +72,16 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		return template.query(sql, params, new UserMapper());
 	}
 	
-	@Override
 	public User queryOneWith(Long id) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public List<User> queryAllWith() {
-		// TODO Auto-generated method stub
+		String sql = "";
 		return null;
 	}
 
-	@Override
 	public List<User> queryListWith(Map<String, ?> params) {
 		// TODO Auto-generated method stub
 		return null;
@@ -286,6 +283,17 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 				"SCORE = :score " + 
 				"WHERE ID = :id";
 		return sql;
+	}
+	
+	public String getJoinSQL(Map<String,Object> params){
+		String sql = "SELECT ";
+			sql += "u.ID, u.UUID, u.PASSWD, u.FIRST_NAME, u.LAST_NAME, u.DISPLAY_NAME, ";
+			sql += "u.MALE, u.BIRTHDAY, u.ADDRESS, u.PHONE, u.MOBILE, u.SCORE, ";
+			sql += "g.ID as GROUP_ID, g.NAME as GROUP_NAME,";
+			sql += "u2.ID as FRIEND_ID, u2.UUID as FRIEND_UUID, u2.FIRST_NAME as FRIEND_FIRST_NAME,";
+			sql += "u2.LAST_NAME as FRIEND_LAST_NAME, u2.DISPLAY_NAME as FRIEND_DISPLAY_NAME, ";
+		
+		return null;
 	}
 	
 	//Inner Class，將資料庫取出的每一行Row封裝成對應的Usert物件

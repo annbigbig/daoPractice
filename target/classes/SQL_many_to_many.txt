@@ -80,7 +80,7 @@ LEFT OUTER JOIN TB_ARTICLE a ON (a.USER_ID = u.ID)
 WHERE u.ID=1
 ORDER BY u.ID,ug.GROUP_ID,uu.UID_2,a.ID ASC;
 
-//用戶-群組-朋友-文章 每個表的每個欄位都抓，修正一下讓它更好，除了連接時盡量不使用連接表的欄位
+//用戶-群組-朋友-文章 每個表的每個欄位都抓，修正一下讓它更好，不使用連接表的欄位
 SELECT 
 u.ID, u.UUID, u.PASSWD, u.FIRST_NAME, u.LAST_NAME, u.DISPLAY_NAME, u.MALE, u.BIRTHDAY, u.ADDRESS, u.PHONE, u.MOBILE, u.SCORE,
 g.ID as GROUP_ID, g.NAME as GROUP_NAME,
@@ -94,6 +94,6 @@ LEFT OUTER JOIN JN_USER_USER uu ON (uu.UID_1 = u.ID)
 LEFT OUTER JOIN TB_USER u2 ON (uu.UID_2 = u2.ID)
 LEFT OUTER JOIN TB_ARTICLE a ON (a.USER_ID = u.ID)
 WHERE u.ID=1
-ORDER BY u.ID, g.ID, u2.ID, a.ID ASC;
+ORDER BY u.ID,ug.GROUP_ID,uu.UID_2,a.ID ASC;
 
 
