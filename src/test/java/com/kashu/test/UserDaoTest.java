@@ -30,13 +30,13 @@ public class UserDaoTest {
 		
 		//count(userDao);
 		
-		countList(userDao);
+		//countList(userDao);
 		
 		//insert(userDao);
 		
 		//update(userDao);
 		
-		//queryList(userDao);
+		queryList(userDao);
 		
 		//deleteById(userDao);
 		
@@ -111,120 +111,159 @@ public class UserDaoTest {
 		System.out.println("---- find by params ----");
 		Map<String,Object> params = new HashMap<String,Object>();
 		
-		System.out.println("-----------search by uuid -----------");
-		params.put("uuid", "%tony%");
-		System.out.println("[params] uuid = %tony%");
+		System.out.println("[params] id = 1 ");
+		params.put("id", new Long(1l));
 		List<User> users = userDao.queryList(params);
 		listUsers(users);
 		
-		System.out.println("----------search by firstName");
+		System.out.println("[params] uuid='rock' , passwd='rock-passwd' ");
 		params.clear();
-		params.put("firstName","%sa%");
-		System.out.println("[params] firstName = %sa%");
+		params.put("uuid", "rock");
+		params.put("passwd", "rock-passwd");
 		users = userDao.queryList(params);
 		listUsers(users);
 		
-		System.out.println("----------search by lastName");
+		System.out.println("[params] uuid='%tony%' , operator='like' ");
 		params.clear();
-		params.put("lastName", "%S%");
-		System.out.println("[params] lastName = %S%");
+		params.put("uuid", "%tony%");
+		params.put("operator", "like");
 		users = userDao.queryList(params);
 		listUsers(users);
 		
-		System.out.println("----------search by displayName");
+		System.out.println("[params] uuid='tony' , operator='eq' ");
 		params.clear();
-		params.put("displayName", "%y%");
-		System.out.println("[params] displayName = %y%");
+		params.put("uuid", "tony");
+		params.put("operator", "eq");
 		users = userDao.queryList(params);
 		listUsers(users);
 		
-		System.out.println("----------search by male");
+		System.out.println("[params] firstName='%na%' , operator='like' ");
+		params.clear();
+		params.put("firstName", "%na%");
+		params.put("operator", "like");
+		users = userDao.queryList(params);
+		listUsers(users);
+		
+		System.out.println("[params] firstName='sasuke' , operator='eq' ");
+		params.clear();
+		params.put("firstName", "sasuke");
+		params.put("operator", "eq");
+		users = userDao.queryList(params);
+		listUsers(users);
+		
+		System.out.println("[params] lastName='%sa%' , operator='like' ");
+		params.clear();
+		params.put("lastName", "%sa%");
+		params.put("operator", "like");
+		users = userDao.queryList(params);
+		listUsers(users);
+		
+		System.out.println("[params] lastName='shota' , operator='eq' ");
+		params.clear();
+		params.put("lastName", "shota");
+		params.put("operator", "eq");
+		users = userDao.queryList(params);
+		listUsers(users);
+		
+		System.out.println("[params] displayName='%dis%' , operator='like' ");
+		params.clear();
+		params.put("displayName", "%dis%");
+		params.put("operator", "like");
+		users = userDao.queryList(params);
+		listUsers(users);
+		
+		System.out.println("[params] displayName='不知火舞' , operator='eq' ");
+		params.clear();
+		params.put("displayName", "不知火舞");
+		params.put("operator", "eq");
+		users = userDao.queryList(params);
+		listUsers(users);
+		
+		System.out.println("[params] male = true ");
 		params.clear();
 		params.put("male", true);
-		System.out.println("[params] male = true");
 		users = userDao.queryList(params);
 		listUsers(users);
 		
-		System.out.println("----------search by birthday (lt)");
+		System.out.println("[params] male = false ");
 		params.clear();
-		//params.put("birthday", getDate("1989-03-15"));
-		params.put("birthday", "1989-03-15");
-		params.put("operator", "lt");
-		System.out.println("[params] birthday = 1989-03-15 , operator = lt");
-		users = userDao.queryList(params);
-		listUsers(users);
-		
-		System.out.println("----------search by birthday (gt)");
-		params.clear();
-		//params.put("birthday", getDate("1989-03-15"));
-		params.put("birthday", "1989-03-15");
-		params.put("operator", "gt");
-		System.out.println("[params] birthday = 1989-03-15 , operator = gt");
+		params.put("male", false);
 		users = userDao.queryList(params);
 		listUsers(users);
 		
 		//以日期查詢時， 參數請用String型態，不要用Date型態， 以免發生不可預期的結果（找不到）
-		System.out.println("----------search by birthday (eq)");
+		System.out.println("[params] birthday = '1987-03-01' , operator = 'gt' ");
 		params.clear();
-		params.put("birthday", "1989-03-15");		//這行找得到
-		//params.put("birthday", getDate("1989-03-15"));		//這行找不到
+		params.put("birthday", getDate("1987-03-01"));
+		//params.put("birthday", "1987-03-01");
+		params.put("operator", "gt");
+		users = userDao.queryList(params);
+		listUsers(users);
+		
+		System.out.println("[params] birthday = '1987-03-01' , operator = 'lt' ");
+		params.clear();
+		params.put("birthday", getDate("1987-03-01"));
+		//params.put("birthday", "1987-03-01");
+		params.put("operator", "lt");
+		users = userDao.queryList(params);
+		listUsers(users);
+		
+		System.out.println("[params] birthday = '1987-03-01' , operator = 'eq' ");
+		params.clear();
+		params.put("birthday", getDate("1987-03-01"));
+		//params.put("birthday", "1987-03-01");
 		params.put("operator", "eq");
-		System.out.println("[params] birthday = 1989-03-15 , operator = eq");
 		users = userDao.queryList(params);
 		listUsers(users);
 		
-		System.out.println("----------search by birthday (between)");
+		System.out.println("[params] date1 = '1980-01-01' , date2 = '1989-12-31' ");
 		params.clear();
-		params.put("date1", "1980-01-01");
-		params.put("date2", "1989-12-31");
-		System.out.println("[params] date1 = 1980-01-01 , date2 = 1989-12-31");
+		params.put("date1", getDate("1980-01-01"));
+		params.put("date2", getDate("1989-12-31"));
+		//params.put("date1", "1980-01-01");
+		//params.put("date2", "1989-12-31");
 		users = userDao.queryList(params);
 		listUsers(users);
 		
-		System.out.println("----------search by address");
+		System.out.println("[params] address = '木葉忍者村' ");
 		params.clear();
-		params.put("address", "%某城%");
-		System.out.println("[params] address = %某城%");
+		params.put("address", "木葉忍者村");
 		users = userDao.queryList(params);
 		listUsers(users);
 		
-		System.out.println("----------search by phone");
+		System.out.println("[params] phone = '%23%' ");
 		params.clear();
 		params.put("phone", "%23%");
-		System.out.println("[params] phone = %23%");
 		users = userDao.queryList(params);
-		listUsers(users);
-		
-		System.out.println("----------search by mobile");
+		listUsers(users);		
+
+		System.out.println("[params] mobile = '%32%' ");
 		params.clear();
 		params.put("mobile", "%32%");
-		System.out.println("[params] mobile = %32%");
 		users = userDao.queryList(params);
-		listUsers(users);
+		listUsers(users);	
 		
-		System.out.println("----------search by score gt");
+		System.out.println("[params] score = 654312 , operator = 'gt'  ");
 		params.clear();
-		params.put("score", new Integer(11703));
+		params.put("score", 654312);
 		params.put("operator", "gt");
-		System.out.println("[params] score = 11703 , operator = gt");
 		users = userDao.queryList(params);
-		listUsers(users);
-		
-		System.out.println("----------search by score lt");
+		listUsers(users);	
+	
+		System.out.println("[params] score = 654312 , operator = 'lt'  ");
 		params.clear();
-		params.put("score", new Integer(11703));
+		params.put("score", 654312);
 		params.put("operator", "lt");
-		System.out.println("[params] score = 11703 , operator = lt");
 		users = userDao.queryList(params);
-		listUsers(users);
+		listUsers(users);		
 		
-		System.out.println("----------search by score eq");
+		System.out.println("[params] score = 654312 , operator = 'eq'  ");
 		params.clear();
-		params.put("score", new Integer(11703));
+		params.put("score", 654312);
 		params.put("operator", "eq");
-		System.out.println("[params] score = 11703 , operator = eq");
 		users = userDao.queryList(params);
-		listUsers(users);
+		listUsers(users);		
+		
 	}
 	
 	public static void deleteById(Dao<User> userDao){

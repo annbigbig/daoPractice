@@ -70,7 +70,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 	}
 
 	public List<User> queryList(Map<String, Object> params) {
-		String sql = "SELECT * FROM TB_USER";
+		String sql = "SELECT * FROM TB_USER u";
 		sql += getWhereClause(params);
 		sql += getOrderClause(params);
 		sql += getLimitClause(params);
@@ -109,7 +109,7 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 
 	@SuppressWarnings("deprecation")
 	public long countList(Map<String, Object> params) {
-		String sql = "SELECT COUNT(*) FROM TB_USER ";
+		String sql = "SELECT COUNT(*) FROM TB_USER u";
 		sql += getWhereClause(params);
 		System.out.println("[sql statement] = " + sql);
 		return template.queryForLong(sql, params);
@@ -163,36 +163,48 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 	public String getWhereClause(Map<String,Object> params){
 		String operator = (params.get("operator")==null) ? "" : (String) params.get("operator");
 		String where = "";
-		if (params.get("uuid")!=null){
-			where = " WHERE UUID LIKE :uuid";
-		}else if (params.get("firstName")!=null){
-			where = " WHERE FIRST_NAME LIKE :firstName";
-		}else if(params.get("lastName")!=null){
-			where = " WHERE LAST_NAME LIKE :lastName";
-		}else if(params.get("displayName")!=null){
-			where = " WHERE DISPLAY_NAME LIKE :displayName";
+		if(params.get("id")!=null){
+			where = " WHERE u.ID = :id";
+		}else if (params.get("uuid")!=null && params.get("passwd")!=null){
+			where = " WHERE u.UUID = :uuid AND u.PASSWD = :passwd";
+		}else if (params.get("uuid")!=null && operator.equals("like")){
+			where = " WHERE u.UUID LIKE :uuid";
+		}else if (params.get("uuid")!=null && operator.equals("eq")){
+			where = " WHERE u.UUID = :uuid";
+		}else if (params.get("firstName")!=null && operator.equals("like")){
+			where = " WHERE u.FIRST_NAME LIKE :firstName";
+		}else if (params.get("firstName")!=null && operator.equals("eq")){
+			where = " WHERE u.FIRST_NAME = :firstName";
+		}else if(params.get("lastName")!=null && operator.equals("like")){
+			where = " WHERE u.LAST_NAME LIKE :lastName";
+		}else if(params.get("lastName")!=null && operator.equals("eq")){
+			where = " WHERE u.LAST_NAME = :lastName";
+		}else if(params.get("displayName")!=null && operator.equals("like")){
+			where = " WHERE u.DISPLAY_NAME LIKE :displayName";
+		}else if(params.get("displayName")!=null && operator.equals("eq")){
+			where = " WHERE u.DISPLAY_NAME = :displayName";
 		}else if(params.get("male")!=null){
-			where = " WHERE MALE = :male";
+			where = " WHERE u.MALE = :male";
 		}else if(params.get("birthday")!=null && operator.equals("gt")){
-			where = " WHERE BIRTHDAY > :birthday";
+			where = " WHERE u.BIRTHDAY > :birthday";
 		}else if(params.get("birthday")!=null && operator.equals("lt")){
-			where = " WHERE BIRTHDAY < :birthday";
+			where = " WHERE u.BIRTHDAY < :birthday";
 		}else if(params.get("birthday")!=null && operator.equals("eq")){
-			where = " WHERE BIRTHDAY = :birthday";
+			where = " WHERE u.BIRTHDAY = :birthday";
 		}else if(params.get("date1")!=null && params.get("date2")!=null){
-			where = " WHERE BIRTHDAY BETWEEN :date1 AND :date2";
+			where = " WHERE u.BIRTHDAY BETWEEN :date1 AND :date2";
 		}else if(params.get("address")!=null){
-			where = " WHERE ADDRESS LIKE :address";
+			where = " WHERE u.ADDRESS LIKE :address";
 		}else if(params.get("phone")!=null){
-			where = " WHERE PHONE LIKE :phone";
+			where = " WHERE u.PHONE LIKE :phone";
 		}else if(params.get("mobile")!=null){
-			where = " WHERE MOBILE LIKE :mobile";
+			where = " WHERE u.MOBILE LIKE :mobile";
 		}else if(params.get("score")!=null && operator.equals("gt")){
-			where = " WHERE SCORE > :score";
+			where = " WHERE u.SCORE > :score";
 		}else if(params.get("score")!=null && operator.equals("lt")){
-			where = " WHERE SCORE < :score";
+			where = " WHERE u.SCORE < :score";
 		}else if(params.get("score")!=null && operator.equals("eq")){
-			where = " WHERE SCORE = :score";
+			where = " WHERE u.SCORE = :score";
 		}
 		System.out.println("[where clause] = " + where);
 		return where;
@@ -204,45 +216,45 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 		String order = "";
 		if( orderColumn!=null && orderType!=null){
 			if(orderColumn.equals("uuid") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY UUID ASC";
+				order = " ORDER BY u.UUID ASC";
 			}else if(orderColumn.equals("uuid") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY UUID DESC";
+				order = " ORDER BY u.UUID DESC";
 			}else if(orderColumn.equals("firstName") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY FIRST_NAME ASC";
+				order = " ORDER BY u.FIRST_NAME ASC";
 			}else if(orderColumn.equals("firstName") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY FIRST_NAME DESC";
+				order = " ORDER BY u.FIRST_NAME DESC";
 			}else if(orderColumn.equals("lastName") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY LAST_NAME ASC";
+				order = " ORDER BY u.LAST_NAME ASC";
 			}else if(orderColumn.equals("lastName") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY LAST_NAME DESC";
+				order = " ORDER BY u.LAST_NAME DESC";
 			}else if(orderColumn.equals("displayName") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY DISPLAY_NAME ASC";
+				order = " ORDER BY u.DISPLAY_NAME ASC";
 			}else if(orderColumn.equals("displayName") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY DISPLAY_NAME DESC";
+				order = " ORDER BY u.DISPLAY_NAME DESC";
 			}else if(orderColumn.equals("male") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY MALE ASC";
+				order = " ORDER BY u.MALE ASC";
 			}else if(orderColumn.equals("male") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY MALE DESC";
+				order = " ORDER BY u.MALE DESC";
 			}else if(orderColumn.equals("birthday") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY BIRTHDAY ASC";
+				order = " ORDER BY u.BIRTHDAY ASC";
 			}else if(orderColumn.equals("birthday") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY BIRTHDAY DESC";
+				order = " ORDER BY u.BIRTHDAY DESC";
 			}else if(orderColumn.equals("address") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY ADDRESS ASC";
+				order = " ORDER BY u.ADDRESS ASC";
 			}else if(orderColumn.equals("address") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY ADDRESS DESC";
+				order = " ORDER BY u.ADDRESS DESC";
 			}else if(orderColumn.equals("phone") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY PHONE ASC";
+				order = " ORDER BY u.PHONE ASC";
 			}else if(orderColumn.equals("phone") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY PHONE DESC";
+				order = " ORDER BY u.PHONE DESC";
 			}else if(orderColumn.equals("mobile") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY MOBILE ASC";
+				order = " ORDER BY u.MOBILE ASC";
 			}else if(orderColumn.equals("mobile") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY MOBILE DESC";
+				order = " ORDER BY u.MOBILE DESC";
 			}else if(orderColumn.equals("score") && orderType.equalsIgnoreCase("asc")){
-				order = " ORDER BY SCORE ASC";
+				order = " ORDER BY u.SCORE ASC";
 			}else if(orderColumn.equals("score") && orderType.equalsIgnoreCase("desc")){
-				order = " ORDER BY SCORE DESC";
+				order = " ORDER BY u.SCORE DESC";
 			}
 		}
 		System.out.println("[order clause] = " + order);
@@ -309,9 +321,9 @@ public class UserDaoImpl implements Dao<User> ,InitializingBean {
 			sql += "FROM TB_USER u ";
 			sql += "LEFT OUTER JOIN JN_USER_GROUP ug ON (u.ID = ug.USER_ID) ";
 			sql += "LEFT OUTER JOIN TB_GROUP g ON (ug.GROUP_ID = g.ID) ";
-			sql += "LEFT OUTER JOIN JN_USER_USER uu ON (uu.UID_1 = u.ID) ";
+			sql += "LEFT OUTER JOIN JN_USER_USER uu ON (u.ID = uu.UID_1) ";
 			sql += "LEFT OUTER JOIN TB_USER u2 ON (uu.UID_2 = u2.ID) ";
-			sql += "LEFT OUTER JOIN TB_ARTICLE a ON (a.USER_ID = u.ID)";
+			sql += "LEFT OUTER JOIN TB_ARTICLE a ON (u.ID = a.USER_ID) ";
 			sql += "LEFT OUTER JOIN TB_CATEGORY c ON (a.CATEGORY_ID = c.ID)";
 			
 			String operator = (params.get("operator")==null) ? "" : (String) params.get("operator");
