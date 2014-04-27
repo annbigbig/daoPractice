@@ -379,9 +379,9 @@ mysql -u root -proot
 MariaDB [(none)]> use daoPracticeDB;
 
 (產生上述定義的空白的資料表)
-MariaDB [(none)]> source schema.sql
+MariaDB [daoPracticeDB]> source schema.sql
 
 (產生測試用資料)
-MariaDB [(none)]> source test-data.sql
+MariaDB [daoPracticeDB]> source test-data.sql
 
 
