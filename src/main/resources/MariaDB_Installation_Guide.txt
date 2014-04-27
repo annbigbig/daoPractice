@@ -1,0 +1,387 @@
+變更身分為root權限
+sudo -i
+
+切換目錄到/usr/local
+cd /usr/local
+
+打開瀏覽器，到SkySQL下載MariaDB 10，官網會連到對岸的.cn網域非常慢所以不要在官網下
+http://downloads.skysql.com/files/MariaDB/mariadb-10.0.10/kvm-bintar-quantal-amd64/mariadb-10.0.10-linux-x86_64.tar.gz
+
+複製剛才下載的檔案到/usr/local目錄下
+cp /home/anntony/下載/mariadb-10.0.10-linux-x86_64.tar.gz /usr/local
+
+確認GLIBC版本大於2.14
+ldd --version
+
+新增群組用戶及安裝軟體
+groupadd mysql
+useradd -g mysql mysql
+cd /usr/local
+tar -zxvpf /path-to/mariadb-VERSION-OS.tar.gz
+ln -s mariadb-VERSION-OS mysql
+cd mysql
+apt-get install libaio1 libaio-dev
+./scripts/mysql_install_db --user=mysql
+chown -R root .
+chown -R mysql data
+
+第一次嘗試啟動MariaDB
+cp support-files/my-medium.cnf /etc/my.cnf
+./bin/mysqld_safe --user=mysql &
+netstat -anp | grep 3306
+
+設置root密碼並移除anonymous用戶及測試用的資料庫
+(此步驟必須是在MariaDB啟動狀態下執行)
+./bin/mysql_secure_installation
+
+將mysql設置為開機自動服務
+echo 'export PATH=/usr/local/mysql/bin:$PATH'>> /etc/profile.d/add_mysql_path.sh
+cp support-files/mysql.server /etc/init.d/mysql
+apt-get install rcconf
+rcconf
+
+重新開機後確認是否mysql服務自動啟動
+netstat -anp | grep 3306
+
+安裝後Binary Log檔案會放在/usr/local/mysql/data
+那些mysql-bin.000001這種樣式的檔案就是
+Log檔名的前綴'mysql-bin'是在/etc/my.cnf裡的[mysqld]區段裡定義的
+log-bin=mysql-bin
+不喜歡的話可以換成別的
+log-bin=hello-ketty
+就會產生hello-kitty.000001這樣的Log檔
+
+查看Binary Log請用指令如下
+mysqlbinlog /usr/local/mysql/data/mysql-bin.000001
+
+
+使用mysql客戶端指令連線至MariaDB server (假設root帳號的密碼也是root）
+方式一
+mysql -u root -p
+
+方式二
+mysql -u root -proot
+
+方式三
+建立一個文字檔/home/anntony/mariadb_passwd，內容如下
+注意password=root不可以有空白字元
+[client]
+user = root
+password=root
+
+然後使用以下指令來連線
+mysql --defaults-file=/home/anntony/mariadb_passwd
+
+進入mysql用戶端之後
+提示符會變成
+MariaDB [(none)]> 
+
+開一個新的本機（localhost）帳號tony密碼也是tony
+MariaDB [(none)]> create user 'tony'@'localhost' identified by 'tony';
+Query OK, 0 rows affected (0.24 sec)
+
+查看一下tony@localhost的權限
+MariaDB [(none)]> show grants for 'tony'@'localhost';
++-------------------------------------------------------------------------------------------------------------+
+| Grants for tony@localhost                                                                                   |
++-------------------------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO 'tony'@'localhost' IDENTIFIED BY PASSWORD '*A41E4CE84B23E6A08E9C7A3864850DCAE83057F2' |
++-------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+
+給tony超超偉大的權限就和root同樣偉大啥都能作
+MariaDB [(none)]> grant all on *.* to 'tony'@'localhost' with grant option;
+Query OK, 0 rows affected (0.02 sec)
+
+
+再看一下tony@localhost的權限
+MariaDB [(none)]> show grants for 'tony'@'localhost';
++----------------------------------------------------------------------------------------------------------------------------------------+
+| Grants for tony@localhost                                                                                                              |
++----------------------------------------------------------------------------------------------------------------------------------------+
+| GRANT ALL PRIVILEGES ON *.* TO 'tony'@'localhost' IDENTIFIED BY PASSWORD '*A41E4CE84B23E6A08E9C7A3864850DCAE83057F2' WITH GRANT OPTION |
++----------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+
+新建一個叫作daoPracticeDB的資料庫
+MariaDB [(none)]> create database daoPracticeDB;
+Query OK, 1 row affected (0.80 sec)
+
+
+看一下是不是真的產生了？
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| daoPracticeDB      |
+| information_schema |
+| mysql              |
+| performance_schema |
++--------------------+
+4 rows in set (0.36 sec)
+
+大概就這樣
+
+等等不要忘了把MariaDB預設的編碼方式改成utf8
+還有關掉DNS反向檢查
+請修改/etc/my.cnf組態檔的[mysqld]區段
+加入下面這五行(utf8的設定)
+init_connect=‘SET collation_connection = utf8_unicode_ci’
+init_connect=‘SET NAMES utf8’
+character-set-server=utf8
+collation-server=utf8_unicode_ci
+skip-character-set-client-handshake
+
+
+然後這兩行是關閉DNS反向檢查的設定
+一樣是寫在/etc/my.cnf的[mysqld]區段裡
+# don't execute DNS reverse check
+skip-name-resolv=1
+
+
+然後在Linux的terminal裡執行
+/etc/init.d/mysql restart
+重新啟動MariaDB
+
+接著再執行
+mysql -u root -proot
+進入MariaDB的提示符，執行
+MariaDB [(none)]> show variables like '%character%';
++--------------------------+---------------------------------------------------------+
+| Variable_name            | Value                                                   |
++--------------------------+---------------------------------------------------------+
+| character_set_client     | utf8                                                    |
+| character_set_connection | utf8                                                    |
+| character_set_database   | utf8                                                    |
+| character_set_filesystem | binary                                                  |
+| character_set_results    | utf8                                                    |
+| character_set_server     | utf8                                                    |
+| character_set_system     | utf8                                                    |
+| character_sets_dir       | /usr/local/mariadb-10.0.10-linux-x86_64/share/charsets/ |
++--------------------------+---------------------------------------------------------+
+8 rows in set (0.00 sec)
+
+再執行
+MariaDB [(none)]> show variables like '%collation%';
++----------------------+-----------------+
+| Variable_name        | Value           |
++----------------------+-----------------+
+| collation_connection | utf8_unicode_ci |
+| collation_database   | utf8_unicode_ci |
+| collation_server     | utf8_unicode_ci |
++----------------------+-----------------+
+3 rows in set (0.00 sec)
+
+這樣就確定MariaDB已經真的使用utf8編碼
+
+先跳出MariaDB提示符
+MariaDB [(none)]> exit
+Bye
+
+在Linux的Terminal下，切換到schema.sql和test-data.sql所在的目錄
+我們要來匯入測試用的資料表定義和記錄列
+anntony@anntony-Lenovo-B590:~$ cd Documents/workspace-sts-3.5.0.RELEASE/daoPractice/src/main/resources/
+anntony@anntony-Lenovo-B590:~/Documents/workspace-sts-3.5.0.RELEASE/daoPractice/src/main/resources$ ls
+jdbc  jdbc.properties  log4j.properties  schema.sql  SQL_many_to_many.txt  test-data.sql  UML
+
+看看schema.sql和test-data.sql裡面寫什麼鬼
+anntony@anntony-Lenovo-B590:~/Documents/workspace-sts-3.5.0.RELEASE/daoPractice/src/main/resources$ cat ./schema.sql 
+CREATE TABLE TB_GROUP (
+	ID BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	NAME VARCHAR(30) NOT NULL,
+	UNIQUE UQ_TB_GROUP_1 (NAME),
+	PRIMARY KEY(ID)
+);
+
+CREATE TABLE TB_USER (
+	ID BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	UUID VARCHAR(30) NOT NULL,
+	PASSWD VARCHAR(30) NOT NULL,
+	FIRST_NAME VARCHAR(30) NOT NULL,
+	LAST_NAME VARCHAR(30) NOT NULL,
+	DISPLAY_NAME VARCHAR(30) NOT NULL,
+	MALE BIT(1) DEFAULT 1,
+	BIRTHDAY DATE,
+	ADDRESS VARCHAR(100),
+	PHONE VARCHAR(50),
+	MOBILE VARCHAR(50),
+	SCORE INT UNSIGNED DEFAULT 0,
+	UNIQUE UQ_TB_USER_1 (UUID),
+	PRIMARY KEY(ID)
+);
+
+CREATE TABLE JN_USER_USER (
+	UID_1 BIGINT UNSIGNED NOT NULL,
+	UID_2 BIGINT UNSIGNED NOT NULL,
+	CONSTRAINT FK_JN_USER_USER_1 FOREIGN KEY (UID_1) REFERENCES TB_USER (ID) ON DELETE CASCADE,
+	CONSTRAINT FK_JN_USER_USER_2 FOREIGN KEY (UID_2) REFERENCES TB_USER (ID) ON DELETE CASCADE,
+	PRIMARY KEY(UID_1,UID_2)
+);
+
+CREATE TABLE JN_USER_GROUP (
+	USER_ID BIGINT UNSIGNED NOT NULL,
+	GROUP_ID BIGINT UNSIGNED NOT NULL,
+	CONSTRAINT FK_JN_USER_GROUP_1 FOREIGN KEY (USER_ID) REFERENCES TB_USER (ID) ON DELETE CASCADE,
+	CONSTRAINT FK_JN_USER_GROUP_2 FOREIGN KEY (GROUP_ID) REFERENCES TB_GROUP (ID),
+	PRIMARY KEY(USER_ID, GROUP_ID)
+);
+
+CREATE TABLE TB_CATEGORY (
+	ID BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	NAME VARCHAR(30) NOT NULL,
+	PID BIGINT UNSIGNED,
+	GROUP_ID BIGINT UNSIGNED NOT NULL,
+	CONSTRAINT FK_TB_CATEGORY_1 FOREIGN KEY (PID) REFERENCES TB_CATEGORY (ID) ON DELETE CASCADE,
+	CONSTRAINT FK_TB_CATEGORY_2 FOREIGN KEY (GROUP_ID) REFERENCES TB_GROUP (ID),
+	UNIQUE UQ_TB_CATEGORY_1 (NAME, PID),
+	PRIMARY KEY(ID)
+);
+
+CREATE TABLE TB_ARTICLE (
+	ID BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	SUBJECT VARCHAR(255) NOT NULL,
+	CONTENT VARCHAR(255) NOT NULL,
+	CREATED_TIME DATETIME NOT NULL,
+	LAST_MODIFIED DATETIME NOT NULL,
+	USER_ID BIGINT UNSIGNED NOT NULL,
+	CATEGORY_ID BIGINT UNSIGNED NOT NULL,
+	CONSTRAINT FK_TB_ARTICLE_1 FOREIGN KEY (USER_ID) REFERENCES TB_USER (ID) ON DELETE CASCADE,
+	CONSTRAINT FK_TB_ARTICLE_2 FOREIGN KEY (CATEGORY_ID) REFERENCES TB_CATEGORY (ID),
+	PRIMARY KEY(ID)
+);
+
+CREATE TABLE TB_REPLY (
+	ID BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+	CONTENT VARCHAR(255) NOT NULL,
+	CREATED_TIME DATETIME NOT NULL,
+	LAST_MODIFIED DATETIME NOT NULL,
+	ARTICLE_ID BIGINT UNSIGNED NOT NULL,
+	USER_ID BIGINT UNSIGNED NOT NULL,
+	CONSTRAINT FK_TB_REPLY_1 FOREIGN KEY (ARTICLE_ID) REFERENCES TB_ARTICLE (ID) ON DELETE CASCADE,
+	CONSTRAINT FK_TB_REPLY_2 FOREIGN KEY (USER_ID) REFERENCES TB_USER (ID) ON DELETE CASCADE,
+	PRIMARY KEY(ID)
+);
+
+
+然後這是測試資料test-data.sql
+anntony@anntony-Lenovo-B590:~/Documents/workspace-sts-3.5.0.RELEASE/daoPractice/src/main/resources$ cat test-data.sql 
+INSERT INTO TB_GROUP (NAME) VALUES ("GENERAL");
+INSERT INTO TB_GROUP (NAME) VALUES ("PAID");
+INSERT INTO TB_GROUP (NAME) VALUES ("VIP");
+INSERT INTO TB_GROUP (NAME) VALUES ("18X");
+INSERT INTO TB_GROUP (NAME) VALUES ("SECRET");
+
+INSERT INTO TB_USER VALUES (NULL,"naruto","naruto-passwd","uzumaki","naruto","漩渦鳴人",1,"1989-11-12","火之國木葉忍者村鳴人路100號1樓","123-345-456","0912-3456",93500);
+INSERT INTO TB_USER VALUES (NULL,"sasuke","sasuke-passwd","uchiha","sasuke","宇智波走智",1,"1988-04-18","火之國木葉忍者村走智路143號2樓","243-456-789","0913-0538",44359);
+INSERT INTO TB_USER VALUES (NULL,"sakura","sakura-passwd","haruno","sakura","春野櫻",0,"1989-12-30","火之國木葉忍者村春櫻路35號3樓","323-473-789","0914-03264-1",2315);
+INSERT INTO TB_USER VALUES (NULL,"rock","rock-passwd","lee","rock","李洛克",1,"1987-03-01","火之國木葉忍者村小李路1號5樓","1235-43-765","0931-022157",78923);
+INSERT INTO TB_USER VALUES (NULL,"kei","kei-passwd","Ah","kei","阿凱老師",1,"1965-01-02","火之國木葉忍者村阿凱路2號18樓","15-737753","0923-032749",92723482);
+INSERT INTO TB_USER VALUES (NULL,"mai","mai-passwd","siranui","mai","不知火舞",0,"1992-02-04","拳皇國木瓜村2號22樓","0204-31516","0978-7787878",783124);
+INSERT INTO TB_USER VALUES (NULL,"shota","shota-passwd","Hna","shota","好舍翔太",1,"1998-01-01","東方國VV村18號18樓","0204-181818","0918-1181818",1351818);
+INSERT INTO TB_USER VALUES (NULL,"tony","tony-passwd","Ka","tony","Tony Ka",1,"1978-02-07","泰之國東尼村97號15樓","0021-3124132","0915-2342165",654312);
+INSERT INTO TB_USER VALUES (NULL,"ino","ino-passwd","yamanaga","ino","山中井野",0,"1990-02-25","火之國頁木葉忍者村山中路7號3樓","1325-153215","0925-123586",123515);
+INSERT INTO TB_USER VALUES (NULL,"kang","kang-passwd","kang","damu","鋼打姆",0,"1990-02-25","鋼彈之國頁達姆村拜拜路123號4樓","3125-08389","0955-123528",78732);
+INSERT INTO TB_USER VALUES (NULL,"tonycha","tonyisnotgay","tony","gay","tony_display_name",1,"1975-11-12","美國底特律某城150號12樓","881-132145","1343141",99999);
+INSERT INTO TB_USER VALUES (NULL,"sasha","sashapasswd","Sa","Sha","Sasha_display_name",1,"1989-3-15","英國伯明罕某城700號1樓","103-135235","9032234",50355);
+INSERT INTO TB_USER VALUES (NULL,"WaluSadi","walupasswd","Wa","LuSadi","WLSD",1,"2014-04-17","我家就住在那太麻里隔壁","12345678","87654321",1200);
+INSERT INTO TB_USER VALUES (NULL,"MuHaMo","Mu-passwd","Mu","HaMo","MHM",0,"2014-04-18 09:40:30","我家在那個大草原的上面","132423258","13241661",32560);
+INSERT INTO TB_USER VALUES (NULL,"chikabu","chika-passwd","Chi","KaBu","CKB",0,"1981-01-08 00:00:00","日本東京都不知火舞市丁小路350號2樓","83143258","11532561",11703);
+
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (1,2);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (2,1);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (1,3);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (3,1);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (1,4);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (4,1);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (1,5);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (5,1);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (2,3);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (3,2);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (2,4);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (4,2);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (2,5);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (5,2);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (2,6);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (6,2);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (3,4);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (4,3);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (3,5);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (5,3);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (3,6);
+INSERT INTO JN_USER_USER (UID_1,UID_2) VALUES (6,3);
+
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (1,1);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (1,2);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (1,3);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (1,4);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (1,5);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (2,1);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (2,2);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (2,3);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (3,1);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (4,1);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (4,4);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (5,1);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (5,4);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (6,1);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (6,2);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (6,3);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (6,4);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (6,5);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (7,1);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (8,1);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (9,1);
+INSERT INTO JN_USER_GROUP (USER_ID, GROUP_ID) VALUES (10,1);
+
+INSERT INTO TB_CATEGORY VALUES(NULL,"GENERAL_ROOT",NULL,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"PAID_ROOT",NULL,2);
+INSERT INTO TB_CATEGORY VALUES(NULL,"VIP_ROOT",NULL,3);
+INSERT INTO TB_CATEGORY VALUES(NULL,"18X_ROOT",NULL,4);
+INSERT INTO TB_CATEGORY VALUES(NULL,"SECRET_ROOT",NULL,5);
+INSERT INTO TB_CATEGORY VALUES(NULL,"GLOBAL_NEWS",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"CHINESE_NEWS",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"LOCAL_NEWS",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"MEDIA",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"TECHNICAL",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"MOVIES",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"GAME",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"MY_GIRLS",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"FUNNY",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"OPEN_BOX",1,1);
+INSERT INTO TB_CATEGORY VALUES(NULL,"JOB",1,1);
+
+INSERT INTO TB_ARTICLE VALUES(NULL,"今天看了火影忍者疾風傳","今天看了火影忍者疾風傳，真的很好看哦啦啦啦","2014-04-20 10:46:01","2014-04-20 10:46:01",1,11);
+INSERT INTO TB_ARTICLE VALUES(NULL,"今天看了鋼鐵人3","今天看了鋼鐵人3，真的很好看哦啦啦啦","2014-04-20 10:46:02","2014-04-20 10:46:02",1,11);
+INSERT INTO TB_ARTICLE VALUES(NULL,"鳴人大爺我今天買了最新的HGG N8","我買了N8趕快拆開來試用一下， 看那完美的外型哦哦哦...","2014-04-20 10:46:03","2014-04-20 10:46:03",1,15);
+INSERT INTO TB_ARTICLE VALUES(NULL,"我馬子和我分手了","我馬子和我分手了嗚嗚嗚七百哩","2014-04-20 10:46:51","2014-04-20 10:46:51",2,13);
+INSERT INTO TB_ARTICLE VALUES(NULL,"我是宇智波走智","我是宇智波走智現在失業中哈哈","2014-04-20 10:46:52","2014-04-20 10:46:52",2,16);
+INSERT INTO TB_ARTICLE VALUES(NULL,"什麼都要會是怎樣？","我什麼都要會是怎樣營養七百哩？","2014-04-20 10:46:53","2014-04-20 10:46:53",2,14);
+INSERT INTO TB_ARTICLE VALUES(NULL,"Hi大家好我是怪力少女春野櫻","Hi大家好我是怪力少女春野櫻，請多指教","2014-04-20 10:47:11","2014-04-20 10:47:11",3,8);
+INSERT INTO TB_ARTICLE VALUES(NULL,"我是小櫻","Hi大家好我是小櫻，請多指教","2014-04-20 10:47:12","2014-04-20 10:47:12",3,8);
+INSERT INTO TB_ARTICLE VALUES(NULL,"我是小李，有沒有人要和我一起修練？","我是小李，我很熱血，有沒有人要一起修練的？","2014-04-20 10:47:15","2014-04-20 10:47:15",4,8);
+
+INSERT INTO TB_REPLY VALUES (NULL,"真的嗎？我也去看了耶，疾風傳還不錯","2014-04-20 11:02:35","2014-04-20 11:02:35",1,3);
+INSERT INTO TB_REPLY VALUES (NULL,"你和小櫻沒有一起去看嗎？","2014-04-20 11:02:36","2014-04-20 11:02:36",1,2);
+INSERT INTO TB_REPLY VALUES (NULL,"走智哥息怒啊，你看我這麼熱血，啊？人就是要像我一樣熱血","2014-04-20 11:02:36","2014-04-20 11:02:36",6,1);
+INSERT INTO TB_REPLY VALUES (NULL,"快點快點拆開來給我看啊啊啊","2014-04-20 11:02:37","2014-04-20 11:02:37",3,4);
+INSERT INTO TB_REPLY VALUES (NULL,"鳴人你怎麼那麼有錢？你不是上個月才出一次任務的說？","2014-04-20 11:02:38","2014-04-20 11:02:38",3,5);
+INSERT INTO TB_REPLY VALUES (NULL,"可以送給我嗎？","2014-04-20 11:02:39","2014-04-20 11:02:39",3,3);
+
+
+進入MariaDB的提示符
+mysql -u root -proot
+
+執行
+
+(選定要操作的資料庫名稱是daoPracticeDB)
+MariaDB [(none)]> use daoPracticeDB;
+
+(產生上述定義的空白的資料表)
+MariaDB [(none)]> source schema.sql
+
+(產生測試用資料)
+MariaDB [(none)]> source test-data.sql
+
+
