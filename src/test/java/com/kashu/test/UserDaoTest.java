@@ -16,6 +16,7 @@ public class UserDaoTest {
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
+		//changes at 2014-04-29 21:25:32
 		GenericXmlApplicationContext ctx = new GenericXmlApplicationContext();
 		ctx.load("classpath:jdbc/annotation/appContext.xml");
 		ctx.refresh();
